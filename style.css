@@ -1,15 +1,124 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+body {
+    background-color: #f4f4f9; 
+    font-family: Arial, sans-serif; 
 }
 
-#msg {
-  color: red;
+/* 
+    Fundo da lista de compras
+*/
+.app {
+    background-color: white; /* Fundo branco para destacar */
+    max-width: 800px; /* Não deixa a caixa esticar demais no computador */
+    margin: 40px auto; /* Centraliza a caixa na tela */
+    padding: 30px; /* Espaço interno para não grudar nas bordas */
+    border-radius: 10px; /* Cantinhos arredondados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombreado bem leve */
 }
 
+/* 
+    Botão de adicionar novo item 
+*/
+#addNew {
+    background-color: #0d6efd; /* Azul padrão do Bootstrap */
+    color: white;
+    padding: 15px 20px; /* Espaço interno: cima/baixo e lados */
+    border-radius: 8px;
+    display: flex; /* Coloca o texto e o ícone na mesma linha */
+    justify-content: space-between; /* Empurra um para cada lado */
+    align-items: center; /* Centraliza a altura deles */
+    cursor: pointer; /* Muda o mouse para a "mãozinha" de clique */
+}
+
+/* Efeito simples de escurecer quando o mouse passa por cima */
+#addNew:hover {
+    background-color: #0b5ed7; 
+}
+
+/* 
+    Cabeçalho da Lista 
+*/
+.list-header {
+    display: grid; /* Usamos Grid para dividir em colunas perfeitas */
+    grid-template-columns: 2fr 1fr 2fr 1fr 1fr; /* Tamanho de cada coluna */
+    background-color: #e9ecef; /* Cinza clarinho */
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold; /* Texto mais gordinho */
+    text-align: center; /* Centraliza o texto */
+}
+
+/* 
+    As linhas dos itens criadas pelo JavaScript 
+*/
+#itens > div {
+    display: grid; /* Mesma divisão de colunas do cabeçalho */
+    grid-template-columns: 2fr 1fr 2fr 1fr 1fr;
+    background-color: white;
+    border: 1px solid #ddd; /* Bordinha cinza bem fina */
+    padding: 15px;
+    margin-top: 10px; /* Espacinho entre uma linha e outra */
+    border-radius: 8px;
+    align-items: center;
+}
+
+/* Dar um destaque sutil quando passar o mouse no item */
+#itens > div:hover {
+    background-color: #f8f9fa; 
+}
+
+/* Textos dentro das colunas */
 .registros {
-    text-align: center;
-    font-size: 1rem;
-    font-weight: 500;
+    text-align: center; 
+}
+
+/* Pega só o primeiro item (o Nome) e alinha à esquerda */
+.registros:nth-child(1) {
+    text-align: left;
+    font-weight: bold;
+}
+
+
+/* 
+    Os botões de lixeira e editar 
+*/
+.options {
+    display: flex;
+    justify-content: space-evenly; /* Espalha os ícones por igual */
+}
+
+.options i {
+    cursor: pointer; /* Mãozinha de clique */
+    font-size: 1.2rem; /* Deixa o ícone um pouco maior */
+}
+
+.fa-edit { color: #0d6efd; } /* Azul */
+.fa-trash-alt { color: #dc3545; } /* Vermelho */
+
+@media (max-width: 768px) {
+    
+    /* Esconde o cabeçalho, pois as 5 colunas iam ficar muito espremidas */
+    .list-header {
+        display: none; 
+    }
+
+    /* Muda os itens de "Tabela" (Grid) para "Cartões" um embaixo do outro */
+    #itens > div {
+        display: flex; /* Troca o grid pelo flexbox */
+        flex-direction: column; /* Empilha os textos um embaixo do outro */
+        padding: 20px;
+        text-align: left; /* Joga tudo pra esquerda */
+    }
+
+    /* Arruma o texto para não ficar centralizado no celular */
+    .registros {
+        text-align: left; 
+        margin-bottom: 5px; /* Espaço entre o Nome, Categoria, etc */
+    }
+    
+    /* Arruma os ícones para ficarem no cantinho esquerdo no celular */
+    .options {
+        justify-content: flex-start;
+        gap: 20px; /* Dá um espaço entre o ícone de editar e a lixeira */
+        margin-top: 15px; /* Empurra os ícones um pouco para baixo */
+    }
 }

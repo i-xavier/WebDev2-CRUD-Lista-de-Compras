@@ -30,16 +30,17 @@ const validarDados = (dadosItem) => {
 let form = document.getElementById("form"); //Aponta para o formulário
 let inNome = document.getElementById("inNome");
 let inQuantidade = document.getElementById("inQuantidade");
-let inCategoria = document.getElementById("inCategoria"); 
+let inCategoria = document.getElementById("inCategoria");
 let msg = document.getElementById("msg"); //Aponta para o espaço que retornará mensagens a respeito de campos vazios
 let itens = document.getElementById("itens"); //Aponta para o espaço onde os registros serão exibidos
 let add = document.getElementById("add");
 let registro = []; //Cria um Array para conter os registros dos itens
+let checkbox = document.querySelector('.isComprado');
 
 // Carrega os registros salvos no localStorage e exibe os itens na página
 document.addEventListener('DOMContentLoaded', function () {
 
-    if (localStorage.getItem("registro") == null) {
+    if (localStorage.getItem("registro") === null) {
         registro = [];
     }
     else {
@@ -52,11 +53,11 @@ document.addEventListener('DOMContentLoaded', function () {
     let total = 0; //Apagar depois ou desenvolver um pouco mais Lucas, fica ao seu critério!
 
     //Percorre cada elemento contido em registro[]
-    registro.forEach(function (element) {
+    registro.forEach(function (element, id) {
         total++//Apagar depois ou desenvolver um pouco mais Lucas, fica ao seu critério!
 
         html += `
-    <div ${isItemComprado(element.status)} >
+    <div id="${id}" ${isItemComprado(element.status)}>
             <span class="registros">${element.nome}</span>
             <span class="registros">${element.qtd}</span>
             <span class="registros">${element.categoria}</span>
@@ -105,9 +106,12 @@ form.addEventListener("submit", (e) => {
 });
 
 
-let gravarDado = (sts) => {
+const gravarDado = (sts) => {
     //Joga os dados que se encontram atualmente em input para o array registro[]
+    idItem = gerarID()
+
     registro.push({
+        id: idItem,
         nome: inNome.value,
         qtd: inQuantidade.value,
         categoria: inCategoria.value,
@@ -118,12 +122,36 @@ let gravarDado = (sts) => {
     localStorage.setItem("registro", JSON.stringify(registro));
 
     //Joga o registro na tela
-    adicionarItem(inNome.value, inCategoria.value, inQuantidade.value, sts)
+    adicionarItem(inNome.value, inCategoria.value, inQuantidade.value, sts, idItem)
+    location.reload();
 };
 
-const adicionarItem = (nome, tipo, qtd, sts) => {
+const gerarID = () => {
+    
+    //Verifica se há algo dentro de registro
+    if (localStorage.getItem("registro") === "[]" || localStorage.getItem("registro") === "null") {
+        return 1;
+    }
+
+    //trannsforma registro em um array
+    let registros = JSON.parse(localStorage.getItem("registro"));
+
+    let id;
+
+    //Percorre o array e salva cada um dos ids
+    for (let i = 0; i < registros.length; i++) {
+        id = parseInt(registros[i].id);
+    }
+
+    //pega o último id e retorna somando mais um
+    return id + 1;
+
+}
+
+
+const adicionarItem = (nome, tipo, qtd, sts, id) => {
     itens.innerHTML += `
-    <div ${isItemComprado(sts)}> 
+    <div id="${id}" ${isItemComprado(sts)}>
             <span class="registros">${nome}</span>
             <span class="registros">${qtd}</span>
             <span class="registros">${tipo}</span>
@@ -131,14 +159,14 @@ const adicionarItem = (nome, tipo, qtd, sts) => {
 
             <span class="options">
             <i onClick= "editarItem(this)" data-bs-toggle="modal" data-bs-target="#form" class="fas fa-edit"></i>
-            <i onClick ="deletarItem(this)" class="fas fa-trash-alt"></i>
+            <i onClick ="deletarItem(this, ${id})" class="fas fa-trash-alt"></i>
             </span>
         </div>
     `;
     resetarCampos();
 }
 
-const deletarItem = (e) => {
+const deletarItem = (e, id) => {
 
     //Apaga a div/registro inteiro com a função remove() 
     //É utilizado 'parentElement' duas vezes pois primeiro aponta pro pai de <i>, que é o span, depois aponta pro pai de <span>, que é a <div>
@@ -157,7 +185,7 @@ const isItemComprado = (sts) => {
 
     //Se status = sim, o fundo do registro fica em um tom verde pastel
     if (sts === 'sim') {
-        isItemComprado = 'style="background-color: #80EF80"'
+        isItemComprado = 'style="background-color: #C1E1C1"'
     }
     return isItemComprado;
 }
