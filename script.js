@@ -6,6 +6,121 @@ class ItemCompra {
         this.qtdItem = qtdItem;
         this.statusItem = statusItem;
     }
+
+    getNomeItem() {
+
+        return this.nomeItem;
+    }
+
+    getTipoItem() {
+
+        return this.tipoItem
+    }
+
+    getQtdItem() {
+
+        return this.qtdItem
+    }
+
+    estaComprado() {
+
+        if (this.statusItem === 'sim') {
+            return true
+        }
+        else
+            return false
+    }
+
+    getStatusItem() {
+
+        return this.statusItem
+    }
+
+    marcarComoComprado(statusItem) {
+        this.statusItem = statusItem;
+    }
+
+    setTipoItem(tipoItem) {
+        this.tipoItem = tipoItem;
+    }
+
+
+}
+
+class ListaItens {
+
+    constructor() {
+        this.itens = [];
+    }
+
+
+    gerarId() {
+
+        if (this.itens.length === 0) {
+            return 1;
+        }
+        else {
+
+            let ultimoItem = this.ultimoItemLista();
+            return ultimoItem + 1;
+        }
+
+    }
+
+    adicionarItem(item) {
+
+        let idItem = this.gerarId();
+
+        this.itens.push({
+            id: idItem,
+            item: item
+        });
+    }
+
+    apagarItem(id) {
+
+        this.itens = this.itens.filter(item => item.id !== id);
+
+    }
+
+    buscar(id) {
+
+        if (this.itens.length === 0) {
+            return null;
+        }
+
+        const itemEncontrado = this.itens.find(elemento => elemento.id === id);
+
+        return itemEncontrado
+    }
+
+    getId(item) {
+
+        const listaDeCompras = this.itens;
+
+        /*listaDeCompras.forEach(function(item){
+            if(item.item === itemLista){
+              return item.id  
+            }
+        })*/
+
+        const idDoItem = listaDeCompras.find(i => i.item === item)
+
+        if (idDoItem === null || idDoItem === undefined) {
+            return null
+        }
+        else
+            return idDoItem.id;
+    }
+
+    ultimoItemLista() {
+
+        const ultimoItem = this.itens[this.itens.length - 1];
+
+        return ultimoItem.id;
+
+    }
+
 }
 
 const validarDados = (dadosItem) => {
@@ -27,6 +142,7 @@ const validarDados = (dadosItem) => {
     return true;
 }
 
+const listaDeCompras = new ListaItens();
 let form = document.getElementById("form"); //Aponta para o formulário
 let inNome = document.getElementById("inNome");
 let inQuantidade = document.getElementById("inQuantidade");
@@ -34,37 +150,38 @@ let inCategoria = document.getElementById("inCategoria");
 let msg = document.getElementById("msg"); //Aponta para o espaço que retornará mensagens a respeito de campos vazios
 let itens = document.getElementById("itens"); //Aponta para o espaço onde os registros serão exibidos
 let add = document.getElementById("add");
-let registro = []; //Cria um Array para conter os registros dos itens
-let checkbox = document.querySelector('.isComprado');
+let checkbox = document.querySelector('[name="isComprado"]');
 
 // Carrega os registros salvos no localStorage e exibe os itens na página
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
 
-    if (localStorage.getItem("registro") === null) {
-        registro = [];
+
+    if (localStorage.getItem("listaDeCompras") === null) {
+        return
     }
-    else {
-        //caso tenha um registro ele é capturado e convertido em JSON
-        registro = JSON.parse(localStorage.getItem("registro"))
-    }
+
+    const listaCompletaAtual = JSON.parse(localStorage.getItem("listaDeCompras"))
+
+    listaDeCompras.itens = listaCompletaAtual;
 
     let html = '';
 
     let total = 0; //Apagar depois ou desenvolver um pouco mais Lucas, fica ao seu critério!
 
     //Percorre cada elemento contido em registro[]
-    registro.forEach(function (element, id) {
+    listaCompletaAtual.forEach(function (registro) {
         total++//Apagar depois ou desenvolver um pouco mais Lucas, fica ao seu critério!
 
         html += `
-    <div id="${id}" ${isItemComprado(element.status)}>
-            <span class="registros">${element.nome}</span>
-            <span class="registros">${element.qtd}</span>
-            <span class="registros">${element.categoria}</span>
-            <span class="registros">${element.status}</span>
+    <div id="${registro.id}" ${isItemComprado(registro.item.statusItem)}>
+            <input type="checkbox" id="comprado${registro.id}" name="isComprado" value="sim">
+            <span class="registros">${registro.item.nomeItem}</span>
+            <span class="registros">${registro.item.qtdItem}</span>
+            <span class="registros">${registro.item.tipoItem}</span>
+            <span class="registros">${registro.item.statusItem}</span>
             <span class="options">
-            <i onClick= "editarItem(this)" data-bs-toggle="modal" data-bs-target="#form" class="fas fa-edit"></i>
-            <i onClick ="deletarItem(this)" class="fas fa-trash-alt"></i>
+            <i onClick="editarItem(this)" data-bs-toggle="modal" data-bs-target="#form" class="fas fa-edit"></i>
+            <i onClick="deletarItem(this, ${registro.id})" class="fas fa-trash-alt"></i>
             </span>
         </div>
     `;
@@ -88,7 +205,8 @@ form.addEventListener("submit", (e) => {
 
     if (validarDados(item)) {
 
-        gravarDado(statusItem)
+        gravarDado(item);
+        //listaDeCompras.adicionarItem(item);
 
         // Define temporariamente o atributo do Bootstrap para fechar o modal após o envio
         add.setAttribute("data-bs-dismiss", "modal");
@@ -105,53 +223,28 @@ form.addEventListener("submit", (e) => {
     }
 });
 
+/*checkbox.addEventListener('change', (e) => {
+    
+    e.marcarComoComprado();
+})*/
 
-const gravarDado = (sts) => {
+const gravarDado = (item) => {
     //Joga os dados que se encontram atualmente em input para o array registro[]
-    idItem = gerarID()
+    listaDeCompras.adicionarItem(item);
 
-    registro.push({
-        id: idItem,
-        nome: inNome.value,
-        qtd: inQuantidade.value,
-        categoria: inCategoria.value,
-        status: sts
-
-    });
-    //slva registro no localStorage
-    localStorage.setItem("registro", JSON.stringify(registro));
+    //salva registro no localStorage
+    localStorage.setItem("listaDeCompras", JSON.stringify(listaDeCompras.itens));
 
     //Joga o registro na tela
-    adicionarItem(inNome.value, inCategoria.value, inQuantidade.value, sts, idItem)
-    location.reload();
+    adicionarItem(item.getNomeItem(), item.getTipoItem(), item.getQtdItem(), item.getStatusItem(), listaDeCompras.getId(item))
+    //location.reload(); Apagar depois
 };
-
-const gerarID = () => {
-    
-    //Verifica se há algo dentro de registro
-    if (localStorage.getItem("registro") === "[]" || localStorage.getItem("registro") === "null") {
-        return 1;
-    }
-
-    //trannsforma registro em um array
-    let registros = JSON.parse(localStorage.getItem("registro"));
-
-    let id;
-
-    //Percorre o array e salva cada um dos ids
-    for (let i = 0; i < registros.length; i++) {
-        id = parseInt(registros[i].id);
-    }
-
-    //pega o último id e retorna somando mais um
-    return id + 1;
-
-}
-
 
 const adicionarItem = (nome, tipo, qtd, sts, id) => {
     itens.innerHTML += `
     <div id="${id}" ${isItemComprado(sts)}>
+
+            <input type="checkbox" id="comprado${id}" name="isComprado" value="sim">
             <span class="registros">${nome}</span>
             <span class="registros">${qtd}</span>
             <span class="registros">${tipo}</span>
@@ -172,10 +265,10 @@ const deletarItem = (e, id) => {
     //É utilizado 'parentElement' duas vezes pois primeiro aponta pro pai de <i>, que é o span, depois aponta pro pai de <span>, que é a <div>
     e.parentElement.parentElement.remove();
     //Remove elemento do array
-    registro.splice(e.parentElement.parentElement.id, 1);
+    listaDeCompras.apagarItem(id);
 
     //Atualiza no localStorage
-    localStorage.setItem("registro", JSON.stringify(registro));
+    localStorage.setItem("listaDeCompras", JSON.stringify(listaDeCompras.itens));
 }
 
 //Pega o status do item como parâmetro e verifica o seu status.
@@ -192,7 +285,8 @@ const isItemComprado = (sts) => {
 
 const editarItem = (e) => {
 
-    let itemSelecionado = e.parentElement.parentElement;
+    console.log(e);
+    /*let itemSelecionado = e.parentElement.parentElement;
 
     // Preenche os inputs com os dados do item selecionado
     inNome.value = itemSelecionado.children[0].innerHTML;
@@ -208,7 +302,9 @@ const editarItem = (e) => {
         }
     });
     // Remove o registro antigo para que a versão editada seja adicionada novamente
-    deletarItem(e);
+    deletarItem(e);*/
+
+
 }
 
 const resetarCampos = () => {
