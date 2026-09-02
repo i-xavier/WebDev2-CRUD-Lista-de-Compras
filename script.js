@@ -36,10 +36,6 @@ class ItemCompra {
         return this.statusItem
     }
 
-    marcarComoComprado(statusItem) {
-        this.statusItem = statusItem;
-    }
-
     setTipoItem(tipoItem) {
         this.tipoItem = tipoItem;
     }
@@ -121,6 +117,18 @@ class ListaItens {
 
     }
 
+    marcarItem(statusItem, id) {
+
+        let buscarItem = this.buscar(id);
+
+        if (statusItem === 'sim') {
+            buscarItem.item.statusItem = 'nao';
+        } else if (statusItem === 'nao') {
+            buscarItem.item.statusItem = 'sim';
+        }
+    }
+
+
 }
 
 const validarDados = (dadosItem) => {
@@ -152,9 +160,12 @@ let itens = document.getElementById("itens"); //Aponta para o espaço onde os re
 let add = document.getElementById("add");
 let checkbox = document.querySelector('[name="isComprado"]');
 
+console.log("antes");
 // Carrega os registros salvos no localStorage e exibe os itens na página
 document.addEventListener('DOMContentLoaded', () => {
 
+
+    console.log("entrou no DOMContentLoaded");
 
     if (localStorage.getItem("listaDeCompras") === null) {
         return
@@ -166,13 +177,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let html = '';
 
-    let total = 0; //Apagar depois ou desenvolver um pouco mais Lucas, fica ao seu critério!
+    //let total = 0; Apagar depois 
 
     //Percorre cada elemento contido em registro[]
     listaCompletaAtual.forEach(function (registro) {
-        total++//Apagar depois ou desenvolver um pouco mais Lucas, fica ao seu critério!
+        //total++ Apagar depois
 
-        html += `
+        //nome, tipo, qtd, sts, id
+        adicionarItem(registro.item.nomeItem, registro.item.tipoItem, registro.item.qtdItem, registro.item.statusItem, registro.id );
+
+        /*html += `
     <div id="${registro.id}" ${isItemComprado(registro.item.statusItem)}>
             <input type="checkbox" id="comprado${registro.id}" name="isComprado" value="sim">
             <span class="registros">${registro.item.nomeItem}</span>
@@ -184,12 +198,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <i onClick="deletarItem(this, ${registro.id})" class="fas fa-trash-alt"></i>
             </span>
         </div>
-    `;
+    `;*/
+
     })
 
-    document.getElementById("total").innerHTML = total //Apagar depois ou desenvolver um pouco mais Lucas, fica ao seu critério!
+    //document.getElementById("total").innerHTML = total Apagar depois
+
     // Insere o HTML gerado no elemento que exibe os registros
-    document.querySelector("#itens").innerHTML = html;
+    //document.querySelector("#itens").innerHTML = html;
+
+
 });
 
 form.addEventListener("submit", (e) => {
@@ -241,7 +259,7 @@ const gravarDado = (item) => {
 };
 
 const adicionarItem = (nome, tipo, qtd, sts, id) => {
-    itens.innerHTML += `
+    /*itens.innerHTML += `
     <div id="${id}" ${isItemComprado(sts)}>
 
             <input type="checkbox" id="comprado${id}" name="isComprado" value="sim">
@@ -255,7 +273,77 @@ const adicionarItem = (nome, tipo, qtd, sts, id) => {
             <i onClick ="deletarItem(this, ${id})" class="fas fa-trash-alt"></i>
             </span>
         </div>
-    `;
+    `;*/
+
+    const itemDiv = document.createElement("div");
+    itemDiv.id = id;
+
+    isItemComprado(sts, itemDiv);
+
+    const checkboxSpan = document.createElement("span");
+    const checkboxItem = document.createElement("input");
+    checkboxItem.setAttribute("name", "isComprado");
+    checkboxItem.setAttribute("type", "checkbox");
+    checkboxItem.setAttribute("value", "sim");
+    checkboxItem.id = `comprado${id}`;
+    checkboxSpan.appendChild(checkboxItem);
+
+    checkboxItem.addEventListener("change", function () {
+        listaDeCompras.marcarItem(sts, id);
+        //localStorage.setItem()
+    })
+
+    const itemNomeSpan = document.createElement("span");
+    const conteudoNomeItem = document.createTextNode(nome);
+    itemNomeSpan.appendChild(conteudoNomeItem);
+    itemNomeSpan.classList.add("registros");
+
+    const itemQtdSpan = document.createElement("span");
+    const conteudoQtdItem = document.createTextNode(qtd);
+    itemQtdSpan.appendChild(conteudoQtdItem);
+    itemQtdSpan.classList.add("registros");
+
+    const itemTipoSpan = document.createElement("span");
+    const conteudoTipoItem = document.createTextNode(tipo);
+    itemTipoSpan.appendChild(conteudoTipoItem);
+    itemTipoSpan.classList.add("registros");
+
+    const itemStatusSpan = document.createElement("span");
+    const conteudoStatusItem = document.createTextNode(sts);
+    itemStatusSpan.appendChild(conteudoStatusItem);
+    itemStatusSpan.classList.add("registros");
+
+    const itemOptions = document.createElement("span");
+    itemOptions.classList.add("options");
+
+    const botaoEditar = document.createElement("i");
+    botaoEditar.classList.add("fas", "fa-edit");
+    botaoEditar.setAttribute("data-bs-toggle", "modal");
+    botaoEditar.setAttribute("data-bs-target", "#form");
+
+    botaoEditar.addEventListener("click", function (e) {
+        editarItem(e);
+    })
+
+    const botaoDeletar = document.createElement("i");
+    botaoDeletar.classList.add("fas", "fa-trash-alt");
+
+    botaoDeletar.addEventListener("click", function () {
+        deletarItem(itemDiv, id);
+    })
+
+    itemOptions.appendChild(botaoEditar);
+    itemOptions.appendChild(botaoDeletar);
+
+    itemDiv.appendChild(checkboxSpan);
+    itemDiv.appendChild(itemNomeSpan);
+    itemDiv.appendChild(itemQtdSpan);
+    itemDiv.appendChild(itemTipoSpan);
+    itemDiv.appendChild(itemStatusSpan);
+    itemDiv.appendChild(itemOptions);
+
+    itens.appendChild(itemDiv);
+
     resetarCampos();
 }
 
@@ -263,7 +351,7 @@ const deletarItem = (e, id) => {
 
     //Apaga a div/registro inteiro com a função remove() 
     //É utilizado 'parentElement' duas vezes pois primeiro aponta pro pai de <i>, que é o span, depois aponta pro pai de <span>, que é a <div>
-    e.parentElement.parentElement.remove();
+    e.remove();
     //Remove elemento do array
     listaDeCompras.apagarItem(id);
 
@@ -272,15 +360,11 @@ const deletarItem = (e, id) => {
 }
 
 //Pega o status do item como parâmetro e verifica o seu status.
-const isItemComprado = (sts) => {
-
-    let isItemComprado = ''
-
-    //Se status = sim, o fundo do registro fica em um tom verde pastel
-    if (sts === 'sim') {
-        isItemComprado = 'style="background-color: #C1E1C1"'
+const isItemComprado = (sts, itemDiv) => {
+    if (sts === "sim") {
+        itemDiv.style.textDecoration = "line-through";
+        itemDiv.style.opacity = "0.5";
     }
-    return isItemComprado;
 }
 
 const editarItem = (e) => {
