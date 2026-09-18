@@ -46,7 +46,27 @@ class ItemCompra {
 class ListaItens {
 
     constructor() {
-        this.itens = [];
+        //this.itens = JSON.parse(localStorage.getItem("listaDeCompras")) || [];
+
+        const dadosItens =
+            JSON.parse(localStorage.getItem("listaDeCompras")) || [];
+
+        /*this.nomeItem = nomeItem;
+    this.tipoItem = tipoItem;
+    this.qtdItem = qtdItem;
+    this.statusItem = statusItem;*/
+
+        this.itens = dadosItens.map(elemento => {
+            return {
+                id: elemento.id,
+                item: new ItemCompra(
+                    elemento.item.nomeItem,
+                    elemento.item.tipoItem,
+                    elemento.item.qtdItem,
+                    elemento.item.statusItem
+                )
+            };
+        });
     }
 
 
@@ -63,20 +83,40 @@ class ListaItens {
 
     }
 
-    adicionarItem(item) {
+    adicionarItem(nomeItem, tipoItem, qtdItem, statusItem) {
 
         let idItem = this.gerarId();
 
         this.itens.push({
             id: idItem,
-            item: item
+            item: new ItemCompra(nomeItem, tipoItem, qtdItem, statusItem)
         });
+
+        //Atualiza no localStorage
+        localStorage.setItem("listaDeCompras", JSON.stringify(this.itens));
     }
 
     apagarItem(id) {
 
         this.itens = this.itens.filter(item => item.id !== id);
 
+        //Atualiza no localStorage
+        localStorage.setItem("listaDeCompras", JSON.stringify(this.itens));
+
+    }
+
+    alterarItem(id, dados) {
+        const registro = this.itens.find(item => item.id === id);
+
+        if (!registro) {
+            return false;
+        }
+
+        Object.assign(registro.item, dados);
+
+        localStorage.setItem("listaDeCompras", JSON.stringify(this.itens));
+
+        return true;
     }
 
     buscar(id) {
@@ -128,6 +168,10 @@ class ListaItens {
         }
     }
 
+    getListaItens() {
+
+        return this.itens;
+    }
 
 }
 
@@ -159,56 +203,34 @@ let msg = document.getElementById("msg"); //Aponta para o espaço que retornará
 let itens = document.getElementById("itens"); //Aponta para o espaço onde os registros serão exibidos
 let add = document.getElementById("add");
 let checkbox = document.querySelector('[name="isComprado"]');
+let marcarCheckbox = document.getElementsByClassName("marcarCheckbox");
+let idItemAlterar = null;
 
-console.log("antes");
-// Carrega os registros salvos no localStorage e exibe os itens na página
 document.addEventListener('DOMContentLoaded', () => {
 
-
-    console.log("entrou no DOMContentLoaded");
-
-    if (localStorage.getItem("listaDeCompras") === null) {
-        return
-    }
-
-    const listaCompletaAtual = JSON.parse(localStorage.getItem("listaDeCompras"))
-
-    listaDeCompras.itens = listaCompletaAtual;
-
-    let html = '';
+    const lista = listaDeCompras.getListaItens();
 
     //let total = 0; Apagar depois 
 
     //Percorre cada elemento contido em registro[]
-    listaCompletaAtual.forEach(function (registro) {
+    lista.forEach(function (registro) {
         //total++ Apagar depois
 
         //nome, tipo, qtd, sts, id
-        adicionarItem(registro.item.nomeItem, registro.item.tipoItem, registro.item.qtdItem, registro.item.statusItem, registro.id );
+        adicionarItem(registro.item.nomeItem, registro.item.tipoItem, registro.item.qtdItem, registro.item.statusItem, registro.id);
 
-        /*html += `
-    <div id="${registro.id}" ${isItemComprado(registro.item.statusItem)}>
-            <input type="checkbox" id="comprado${registro.id}" name="isComprado" value="sim">
-            <span class="registros">${registro.item.nomeItem}</span>
-            <span class="registros">${registro.item.qtdItem}</span>
-            <span class="registros">${registro.item.tipoItem}</span>
-            <span class="registros">${registro.item.statusItem}</span>
-            <span class="options">
-            <i onClick="editarItem(this)" data-bs-toggle="modal" data-bs-target="#form" class="fas fa-edit"></i>
-            <i onClick="deletarItem(this, ${registro.id})" class="fas fa-trash-alt"></i>
-            </span>
-        </div>
-    `;*/
 
     })
 
-    //document.getElementById("total").innerHTML = total Apagar depois
-
-    // Insere o HTML gerado no elemento que exibe os registros
-    //document.querySelector("#itens").innerHTML = html;
-
-
 });
+
+form.addEventListener("hidden.bs.modal", () => {
+
+    idItemAlterar = null;
+
+})
+
+
 
 form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -218,62 +240,76 @@ form.addEventListener("submit", (e) => {
     const qtdItem = Number(inQuantidade.value);
     const statusItem = document.querySelector('input[name="inStatus"]:checked').value;
 
+    const verificarItem = { nome: nomeItem, tipo: tipoItem, qtd: qtdItem, status: statusItem };
+
+
     //Cria um objeto
-    let item = new ItemCompra(nomeItem, tipoItem, qtdItem, statusItem);
 
-    if (validarDados(item)) {
+    if (idItemAlterar === null) {
+        if (validarDados(verificarItem)) {
 
-        gravarDado(item);
-        //listaDeCompras.adicionarItem(item);
+            //let gravarItem = new ItemCompra(nomeItem, tipoItem, qtdItem, statusItem);
 
-        // Define temporariamente o atributo do Bootstrap para fechar o modal após o envio
-        add.setAttribute("data-bs-dismiss", "modal");
+            gravarDado(nomeItem, tipoItem, qtdItem, statusItem);
+            //listaDeCompras.adicionarItem(item);
 
-        add.click();
+            // Define temporariamente o atributo do Bootstrap para fechar o modal após o envio
+            add.setAttribute("data-bs-dismiss", "modal");
 
-        //remove o valor para as próximas adições
-        add.setAttribute("data-bs-dismiss", "");
+            add.click();
 
-        alert('Item cadastrado!');
+            //remove o valor para as próximas adições
+            add.setAttribute("data-bs-dismiss", "");
+
+            alert('Item cadastrado!');
+
+        } else {
+            msg.innerHTML = 'Todos os campos devem ser preenchidos!';
+        }
 
     } else {
-        msg.innerHTML = 'Todos os campos devem ser preenchidos!';
+        if (validarDados(verificarItem)) {
+
+            let item = new ItemCompra(nomeItem, tipoItem, qtdItem, statusItem);
+
+            listaDeCompras.alterarItem(idItemAlterar, item);
+
+            add.setAttribute("data-bs-dismiss", "modal");
+
+            add.click();
+
+            //remove o valor para as próximas adições
+            add.setAttribute("data-bs-dismiss", "");
+
+            alert('Item editado!');
+
+        } else {
+            msg.innerHTML = 'Todos os campos devem ser preenchidos!';
+        }
     }
+
+
+
 });
 
-/*checkbox.addEventListener('change', (e) => {
-    
-    e.marcarComoComprado();
+/*
+checkbox.addEventListener("change", () =>{
+    console.log("marcado");
 })*/
 
-const gravarDado = (item) => {
+/*marcarCheckbox.addEventListener("change", () =>{
+    console.log("marcado");
+})*/
+
+const gravarDado = (nomeItem, tipoItem, qtdItem, statusItem) => {
     //Joga os dados que se encontram atualmente em input para o array registro[]
-    listaDeCompras.adicionarItem(item);
-
-    //salva registro no localStorage
-    localStorage.setItem("listaDeCompras", JSON.stringify(listaDeCompras.itens));
-
+    listaDeCompras.adicionarItem(nomeItem, tipoItem, qtdItem, statusItem);
     //Joga o registro na tela
-    adicionarItem(item.getNomeItem(), item.getTipoItem(), item.getQtdItem(), item.getStatusItem(), listaDeCompras.getId(item))
+    adicionarItem(nomeItem, tipoItem, qtdItem, statusItem, listaDeCompras.ultimoItemLista())
     //location.reload(); Apagar depois
 };
 
 const adicionarItem = (nome, tipo, qtd, sts, id) => {
-    /*itens.innerHTML += `
-    <div id="${id}" ${isItemComprado(sts)}>
-
-            <input type="checkbox" id="comprado${id}" name="isComprado" value="sim">
-            <span class="registros">${nome}</span>
-            <span class="registros">${qtd}</span>
-            <span class="registros">${tipo}</span>
-            <span class="registros">${sts}</span>
-
-            <span class="options">
-            <i onClick= "editarItem(this)" data-bs-toggle="modal" data-bs-target="#form" class="fas fa-edit"></i>
-            <i onClick ="deletarItem(this, ${id})" class="fas fa-trash-alt"></i>
-            </span>
-        </div>
-    `;*/
 
     const itemDiv = document.createElement("div");
     itemDiv.id = id;
@@ -286,11 +322,14 @@ const adicionarItem = (nome, tipo, qtd, sts, id) => {
     checkboxItem.setAttribute("type", "checkbox");
     checkboxItem.setAttribute("value", "sim");
     checkboxItem.id = `comprado${id}`;
+    checkboxItem.classList.add("marcarCheckbox");
     checkboxSpan.appendChild(checkboxItem);
 
     checkboxItem.addEventListener("change", function () {
-        listaDeCompras.marcarItem(sts, id);
-        //localStorage.setItem()
+        /*listaDeCompras.marcarItem(sts, id);
+        //localStorage.setItem()*/
+
+        console.log(document.querySelector('input[name="inStatus"]:checked').value)
     })
 
     const itemNomeSpan = document.createElement("span");
@@ -321,8 +360,8 @@ const adicionarItem = (nome, tipo, qtd, sts, id) => {
     botaoEditar.setAttribute("data-bs-toggle", "modal");
     botaoEditar.setAttribute("data-bs-target", "#form");
 
-    botaoEditar.addEventListener("click", function (e) {
-        editarItem(e);
+    botaoEditar.addEventListener("click", function () {
+        editarItem(nome, tipo, qtd, sts, id);
     })
 
     const botaoDeletar = document.createElement("i");
@@ -355,8 +394,7 @@ const deletarItem = (e, id) => {
     //Remove elemento do array
     listaDeCompras.apagarItem(id);
 
-    //Atualiza no localStorage
-    localStorage.setItem("listaDeCompras", JSON.stringify(listaDeCompras.itens));
+
 }
 
 //Pega o status do item como parâmetro e verifica o seu status.
@@ -367,27 +405,11 @@ const isItemComprado = (sts, itemDiv) => {
     }
 }
 
-const editarItem = (e) => {
-
-    console.log(e);
-    /*let itemSelecionado = e.parentElement.parentElement;
-
-    // Preenche os inputs com os dados do item selecionado
-    inNome.value = itemSelecionado.children[0].innerHTML;
-    inQuantidade.value = itemSelecionado.children[1].innerHTML;
-    inCategoria.value = itemSelecionado.children[2].innerHTML;
-    let status = itemSelecionado.children[3].innerHTML;
-
-    //Verifica todos os radios buttons
-    document.querySelectorAll('input[name="inStatus"]').forEach(radio => {
-        //Se corresponder, marque esse radio
-        if (radio.value === status) {
-            radio.checked = true;
-        }
-    });
-    // Remove o registro antigo para que a versão editada seja adicionada novamente
-    deletarItem(e);*/
-
+const editarItem = (nome, tipo, qtd, sts, id) => {
+    inNome.value = nome;
+    inCategoria.value = tipo;
+    inQuantidade.value = qtd;
+    idItemAlterar = id;
 
 }
 
