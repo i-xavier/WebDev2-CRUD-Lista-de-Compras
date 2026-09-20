@@ -6,14 +6,10 @@ class ItemCompra {
         this.qtdItem = qtdItem;
         this.statusItem = statusItem;
     }
-
 }
-
 // cria classe ListaItens
 class ListaItens {
-
     constructor() {
-
         //cria uma constante que captura o que esta salvo no localStorage/ caso não tenha nada a lista é iniciada com []
         const dadosItens =
             JSON.parse(localStorage.getItem("listaDeCompras")) || [];
@@ -32,10 +28,7 @@ class ListaItens {
         });
     }
 
-
-
     gerarId() {
-
         //avalia se a lista esta vazia
         if (this.itens.length === 0) {
             return 1;
@@ -45,11 +38,9 @@ class ListaItens {
             let ultimoItem = this.ultimoItemLista();
             return ultimoItem + 1;
         }
-
     }
 
     adicionarItem(nomeItem, tipoItem, qtdItem, statusItem) {
-
         // gera id
         let idItem = this.gerarId();
 
@@ -69,7 +60,6 @@ class ListaItens {
 
         //Atualiza no localStorage
         localStorage.setItem("listaDeCompras", JSON.stringify(this.itens));
-
     }
 
     alterarItem(id, dados) {
@@ -80,7 +70,6 @@ class ListaItens {
         if (!registro) {
             return false;
         }
-
         //copia os dados inputados pelo o usuário para o item encontrado anteriormente
         Object.assign(registro.item, dados);
 
@@ -90,20 +79,16 @@ class ListaItens {
     }
 
     buscar(id) {
-
         //se lista vazia, retorna nulo
         if (this.itens.length === 0) {
             return null;
         }
-
-
         const itemEncontrado = this.itens.find(elemento => elemento.id === id);
 
         return itemEncontrado
     }
 
     getId(item) {
-
         const listaDeCompras = this.itens;
 
         //procura um registro de item que seja identico ao passado por parametro
@@ -122,11 +107,9 @@ class ListaItens {
         const ultimoItem = this.itens[this.itens.length - 1];
 
         return ultimoItem.id;
-
     }
 
     getListaItens() {
-
         return this.itens;
     }
 
@@ -150,7 +133,6 @@ class ListaItens {
         //atualiza no DOM
         atualizarRegistro(id);
     }
-
 }
 
 const validarDados = (dadosItem) => {
@@ -185,7 +167,6 @@ let total = document.getElementById("total");
 let totalItens = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
-
     const lista = listaDeCompras.getListaItens();
 
     //Percorre cada elemento contido em registro[]
@@ -195,28 +176,23 @@ document.addEventListener('DOMContentLoaded', () => {
         //nome, tipo, qtd, sts, id
         adicionarItem(registro.item.nomeItem, registro.item.tipoItem, registro.item.qtdItem, registro.item.statusItem, registro.id);
     })
-
 });
 
 //caso o modal seja fechado
 form.addEventListener("hidden.bs.modal", () => {
-
     //a constante que guarda o id do item em edição é resetada
     idItemAlterar = null;
-
 })
 
-const contarTotalItens = function (item){
-
-    if(item === 1){
+const contarTotalItens = function (item) {
+    if (item === 1) {
         totalItens++;
-    }else if(item === 0){
+    } else if (item === 0) {
         totalItens--;
     }
 
     total.innerText = totalItens;
-} 
-
+}
 
 form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -226,10 +202,8 @@ form.addEventListener("submit", (e) => {
     const qtdItem = Number(inQuantidade.value);
     const statusItem = document.querySelector('input[name="inStatus"]:checked').value;
 
+    //Cria um objeto para verificar os dados
     const verificarItem = { nome: nomeItem, tipo: tipoItem, qtd: qtdItem, status: statusItem };
-
-
-    //Cria um objeto
 
     //analisa se há um item sendo editado ou não
     if (idItemAlterar === null) {
@@ -238,10 +212,12 @@ form.addEventListener("submit", (e) => {
             //esvazia qualquer mensagem que foi msotrada ao usuário anteriormente
             msg.innerHTML = '';
 
+            //gravar dados
             gravarDado(nomeItem, tipoItem, qtdItem, statusItem);
-            //listaDeCompras.adicionarItem(item);
 
             contarTotalItens(1);
+            
+            resetarCampos();
 
             // Define temporariamente o atributo do Bootstrap para fechar o modal após o envio
             add.setAttribute("data-bs-dismiss", "modal");
@@ -270,6 +246,8 @@ form.addEventListener("submit", (e) => {
             //atualizar o registro na tela
             atualizarRegistro(idItemAlterar);
 
+            resetarCampos();
+
             add.setAttribute("data-bs-dismiss", "modal");
 
             add.click();
@@ -283,23 +261,17 @@ form.addEventListener("submit", (e) => {
             msg.innerHTML = 'Todos os campos devem ser preenchidos!';
         }
     }
-
-
-
 });
 
 const gravarDado = (nomeItem, tipoItem, qtdItem, statusItem) => {
-
     //salva os dados no repositório
     listaDeCompras.adicionarItem(nomeItem, tipoItem, qtdItem, statusItem);
 
     //Atualiza o DOM
     adicionarItem(nomeItem, tipoItem, qtdItem, statusItem, listaDeCompras.ultimoItemLista())
-
 };
 
 const adicionarItem = (nome, tipo, qtd, sts, id) => {
-
     //cria um elemento div 
     const itemDiv = document.createElement("div");
     itemDiv.id = id;
@@ -324,11 +296,9 @@ const adicionarItem = (nome, tipo, qtd, sts, id) => {
 
     //evento observa qualquer mudança feita no checkbox desse registro
     checkboxItem.addEventListener("change", function () {
-
         const status = this.checked ? "sim" : "nao";
 
         listaDeCompras.marcarItem(status, id, itemDiv);
-
     });
 
     //cria um span que guarda os dados a respeito do nome do item
@@ -375,7 +345,6 @@ const adicionarItem = (nome, tipo, qtd, sts, id) => {
     //"ouve" os cliques no botão apagar
     botaoDeletar.addEventListener("click", function () {
         deletarItem(itemDiv, id);
-
     })
 
     //"cola" os elementos que ficarão dentro do conteiner de botões
@@ -392,13 +361,10 @@ const adicionarItem = (nome, tipo, qtd, sts, id) => {
 
     //joga a div para um local dentro do html para que o usuário veja o registro
     itens.appendChild(itemDiv);
-
 }
 
 const deletarItem = (e, id) => {
-
     //Apaga a div/registro inteiro com a função remove() 
-    //É utilizado 'parentElement' duas vezes pois primeiro aponta pro pai de <i>, que é o span, depois aponta pro pai de <span>, que é a <div>
     e.remove();
 
     //Remove item do total
@@ -406,27 +372,18 @@ const deletarItem = (e, id) => {
 
     //Remove elemento do array
     listaDeCompras.apagarItem(id);
-
-
 }
 
 //Pega o status do item como parâmetro e verifica o seu status.
 const isItemComprado = (sts, itemDiv) => {
-
-    //muda o style da div para deixar claro o estado do item
     if (sts === "sim") {
-        itemDiv.style.backgroundColor = "#d1e7dd"; // Verde bem suave (padrão 'success' do Bootstrap)
-        itemDiv.style.color = "#0f5132"; // Texto em um verde mais escuro para dar contraste
-        itemDiv.style.opacity = "0.8";
+        itemDiv.classList.add("item-comprado");
     } else {
-        itemDiv.style.backgroundColor = "";
-        itemDiv.style.color = "";
-        itemDiv.style.opacity = "";
+        itemDiv.classList.remove("item-comprado");
     }
 }
 
 const atualizarRegistro = function (id) {
-
     //captura a div que precisa ser carregada
     const pai = document.getElementById(id);
     const filhos = pai.children;
@@ -434,7 +391,6 @@ const atualizarRegistro = function (id) {
     const elemento = listaDeCompras.buscar(id);
 
     const sts = elemento.item.statusItem;
-    //const sts = document.querySelector(`input[name="inStatus"][value="${elemento.item.statusItem}"]`);
 
     filhos[0].querySelector('input').checked = (sts === 'sim');
     filhos[1].innerText = elemento.item.nomeItem;
@@ -444,12 +400,10 @@ const atualizarRegistro = function (id) {
 
     //atualiza como o registro deve ser mostrado oa usuário por conta do status
     isItemComprado(sts, pai)
-
 }
 
 const editarItem = (id) => {
     const elemento = listaDeCompras.buscar(id);
-
     // Acessando as propriedades corretas dentro de 'item'
     inNome.value = elemento.item.nomeItem;
     inCategoria.value = elemento.item.tipoItem;
