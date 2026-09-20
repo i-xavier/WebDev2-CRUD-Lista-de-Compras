@@ -153,27 +153,6 @@ class ListaItens {
 
 }
 
-const marcarItem = function (statusItem, id) {
-
-    //busca item
-    let buscarItem = listaDeCompras.buscar(id);
-
-    if (!buscarItem) {
-        return;
-    }
-
-    //altera o status do item encontrado com o valor passado por parametro
-    buscarItem.item.statusItem = statusItem;
-
-    localStorage.setItem(
-        "listaDeCompras",
-        JSON.stringify(listaDeCompras.itens)
-    );
-
-    //atualiza no DOM
-    atualizarRegistro(id);
-}
-
 const validarDados = (dadosItem) => {
     //validarDados recebe o registro captado pelo os inputs
 
@@ -348,7 +327,7 @@ const adicionarItem = (nome, tipo, qtd, sts, id) => {
 
         const status = this.checked ? "sim" : "nao";
 
-        marcarItem(status, id, itemDiv);
+        listaDeCompras.marcarItem(status, id, itemDiv);
 
     });
 
